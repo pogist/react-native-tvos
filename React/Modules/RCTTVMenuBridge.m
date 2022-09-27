@@ -36,4 +36,10 @@ RCT_EXPORT_METHOD(disableTVPanGesture)
     [[NSNotificationCenter defaultCenter] postNotificationName:RCTTVDisablePanGestureNotification object:nil];
 }
 
+RCT_EXPORT_METHOD(cancelsTouchesInView:(BOOL)cancelsTouchesInView)
+{
+    [RCTTVRemoteHandler setCancelsTouchesInView:cancelsTouchesInView];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTTVSetCancelsTouchesInViewNotification object:@(cancelsTouchesInView)];
+}
+
 @end
