@@ -36,4 +36,16 @@ RCT_EXPORT_METHOD(disableTVPanGesture)
     [[NSNotificationCenter defaultCenter] postNotificationName:RCTTVDisablePanGestureNotification object:nil];
 }
 
+RCT_EXPORT_METHOD(enableCapture)
+{
+    [RCTTVRemoteHandler setUseCapture:YES];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTTVEnableCaptureNotification object:nil];
+}
+
+RCT_EXPORT_METHOD(disableCapture)
+{
+    [RCTTVRemoteHandler setUseCapture:NO];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RCTTVDisableCaptureNotification object:nil];
+}
+
 @end

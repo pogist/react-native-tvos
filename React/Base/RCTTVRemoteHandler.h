@@ -13,6 +13,9 @@ extern NSString * _Nonnull const RCTTVDisableMenuKeyNotification;
 extern NSString * _Nonnull const RCTTVEnablePanGestureNotification;
 extern NSString * _Nonnull const RCTTVDisablePanGestureNotification;
 
+extern NSString * _Nonnull const RCTTVEnableCaptureNotification;
+extern NSString * _Nonnull const RCTTVDisableCaptureNotification;
+
 extern NSString * _Nonnull const RCTTVRemoteEventMenu;
 extern NSString * _Nonnull const RCTTVRemoteEventPlayPause;
 extern NSString * _Nonnull const RCTTVRemoteEventSelect;
@@ -46,7 +49,12 @@ extern NSString * _Nonnull const RCTTVRemoteEventPan;
 + (BOOL)usePanGesture;
 + (void)setUsePanGesture:(BOOL)usePanGesture;
 
++ (BOOL)useCapture;
++ (void)setUseCapture:(BOOL)useCapture;
+
 - (void)enableTVMenuKey;
 - (void)disableTVMenuKey;
+- (void)enableCapture;
+- (void)disableCapture;
 
 @end

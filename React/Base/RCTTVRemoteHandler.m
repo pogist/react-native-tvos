@@ -26,6 +26,9 @@ NSString *const RCTTVDisableMenuKeyNotification = @"RCTTVDisableMenuKeyNotificat
 NSString *const RCTTVEnablePanGestureNotification = @"RCTTVEnablePanGestureNotification";
 NSString *const RCTTVDisablePanGestureNotification = @"RCTTVDisablePanGestureNotification";
 
+NSString *const RCTTVEnableCaptureNotification = @"RCTTVEnableCaptureNotification";
+NSString *const RCTTVDisableCaptureNotification = @"RCTTVDisableCaptureNotification";
+
 NSString *const RCTTVRemoteEventMenu = @"menu";
 NSString *const RCTTVRemoteEventPlayPause = @"playPause";
 NSString *const RCTTVRemoteEventSelect = @"select";
@@ -66,6 +69,7 @@ NSString *const RCTTVRemoteEventPan = @"pan";
 
 static __volatile BOOL __useMenuKey = NO;
 static __volatile BOOL __usePanGesture = NO;
+static __volatile BOOL __useCapture = YES;
 
 + (BOOL)useMenuKey
 {
@@ -85,6 +89,16 @@ static __volatile BOOL __usePanGesture = NO;
 + (void)setUsePanGesture:(BOOL)usePanGesture
 {
     __usePanGesture = usePanGesture;
+}
+
++ (BOOL)useCapture
+{
+    return __useCapture;
+}
+
++ (void)setUseCapture:(BOOL)useCapture
+{
+    __useCapture = useCapture;
 }
 
 #pragma mark -
@@ -217,6 +231,16 @@ static __volatile BOOL __usePanGesture = NO;
                                                  name:RCTTVDisablePanGestureNotification
                                                object:nil];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(enableCapture)
+                                                 name:RCTTVEnableCaptureNotification
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(disableCapture)
+                                                 name:RCTTVDisableCaptureNotification
+                                               object:nil];
+
     for (NSString *key in [self.tvRemoteGestureRecognizers allKeys]) {
       [_view addGestureRecognizer:self.tvRemoteGestureRecognizers[key]];
     }
@@ -229,6 +253,11 @@ static __volatile BOOL __usePanGesture = NO;
         [self enableTVPanGesture];
     } else {
         [self disableTVPanGesture];
+    }
+    if ([RCTTVRemoteHandler useCapture]) {
+        [self enableCapture];
+    } else {
+        [self disableCapture];
     }
 }
 
@@ -255,7 +284,12 @@ static __volatile BOOL __usePanGesture = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:RCTTVDisablePanGestureNotification
                                                   object:nil];
-
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:RCTTVEnableCaptureNotification
+                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:RCTTVDisableCaptureNotification
+                                                  object:nil];
 }
 
 # pragma mark -
@@ -293,6 +327,26 @@ static __volatile BOOL __usePanGesture = NO;
     dispatch_async(dispatch_get_main_queue(), ^{
         if ([[self.view gestureRecognizers] containsObject:self.tvPanGestureRecognizer]) {
             [self.view removeGestureRecognizer:self.tvPanGestureRecognizer];
+        }
+    });
+}
+
+- (void)enableCapture
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (NSString *key in [self.tvRemoteGestureRecognizers allKeys]) {
+            UIGestureRecognizer *recognizer = self.tvRemoteGestureRecognizers[key];
+            recognizer.cancelsTouchesInView = YES;
+        }
+    });
+}
+
+- (void)disableCapture
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (NSString *key in [self.tvRemoteGestureRecognizers allKeys]) {
+            UIGestureRecognizer *recognizer = self.tvRemoteGestureRecognizers[key];
+            recognizer.cancelsTouchesInView = NO;
         }
     });
 }
@@ -405,7 +459,6 @@ static __volatile BOOL __usePanGesture = NO;
 {
   UILongPressGestureRecognizer *recognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:selector];
   recognizer.allowedPressTypes = @[ @(pressType) ];
-  recognizer.cancelsTouchesInView = NO;
 
   _tvRemoteGestureRecognizers[name] = recognizer;
 }
@@ -414,7 +467,6 @@ static __volatile BOOL __usePanGesture = NO;
 {
   UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:selector];
   recognizer.allowedPressTypes = @[ @(pressType) ];
-  recognizer.cancelsTouchesInView = NO;
 
   _tvRemoteGestureRecognizers[name] = recognizer;
 }
@@ -425,7 +477,6 @@ static __volatile BOOL __usePanGesture = NO;
 {
   UISwipeGestureRecognizer *recognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:selector];
   recognizer.direction = direction;
-  recognizer.cancelsTouchesInView = NO;
 
   _tvRemoteGestureRecognizers[name] = recognizer;
 }
